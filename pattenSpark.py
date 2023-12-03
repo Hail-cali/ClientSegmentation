@@ -1,6 +1,5 @@
-import findspark; findspark.init()
 import pyspark
-import re
+import findspark; findspark.init()
 import os
 from utils import Config
 import datetime
