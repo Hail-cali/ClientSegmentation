@@ -1,9 +1,11 @@
-from pattenSpark import *
-
-
+# from pattenSpark import *
+import pattenSpark
+import pattern
+import os
+import datetime
 
 if __name__ == '__main__':
-    cluster = PattenCluster(root= './', c_name='HAIL.local', num_worker=3)
+    cluster = pattenSpark.PattenCluster(root= './', c_name='HAIL.local', num_worker=3)
 
     print(f'Main Protocol in SPARK RUN :: CLUSTER : {cluster.sc}')
     log_save_path = os.path.join(cluster.root, 'log', 'log_' + datetime.date.today().strftime('%d.%m.%y') + '.json')
@@ -33,19 +35,15 @@ if __name__ == '__main__':
         dis = f'MEAN BATCH WD({cluster.wd})::  | TOTAL_READ_DAY  | TOTAL_READ_CNT  |  READ_WEEK  | UNIQUE USER  | READ_CNT(DAY)|'
         print(dis)
         for p in pat:
-            seg_pattern = Pattern(read_day=batch_read_day,week_cnt=batch_week_cnt, type=p)
+            seg_pattern = pattern.Pattern(read_day=batch_read_day,week_cnt=batch_week_cnt, type=p)
             seg_res = cluster.mean_batch(batch_combine.filter(seg_pattern)).collect()[0]
-
             seg_cash = cluster.mean_batch_merge(batch_combine.filter(seg_pattern), batch_buy).collect()[0][-1][-1]
-
             print(f'TYPE: {p.upper()[:5]}::\t\t| '
                   f'{seg_res[0]} \t\t\t| {seg_res[1]} \t\t\t    | {seg_res[2]} \t\t\t | {seg_res[3]}  \t\t| {seg_res[4]} \t |')
             seg_name = batch_name + f'_{p}Watching'
             cluster.log.update_log({seg_name: seg_res+[seg_cash]})
-            # cluster.log.update_log({seg_name+'_cash': seg_cash})
 
     print(f"\n{'='*10} Batch {i} End {'='*10}")
-
     cluster.log.save(log_save_path)
     cluster.close_cluster()
     print(f'Main Protocol in SPARK END ')
