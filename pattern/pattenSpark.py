@@ -1,10 +1,9 @@
-import pyspark
 import findspark; findspark.init()
+import pyspark
 import os
 from utils import Config
 import datetime
 import json
-
 
 class Pattern:
     label_name = ['soft_watching', 'regular_watching', 'binge_watching', 'heavy_watching']
@@ -63,7 +62,7 @@ class PattenCluster:
     def rdd(self, file):
         map = {'read':2, 'buy':0, 'cat':1, 'uid':3}
         # .map(lambda x: str(x.encode('utf-8')))
-        return self.sc.textFile(os.path.join(self.root, 'db', self.data_path[map[file]]), self.num_worker, use_unicode=True)
+        return self.sc.textFile(os.path.join(self.root, '../db', self.data_path[map[file]]), self.num_worker, use_unicode=True)
 
     def make_combined_batch(self, opt='read', batch_num=0):
         '''
@@ -174,7 +173,7 @@ class PattenCluster:
 
     def _load_data(self):
         if os.path.exists(self.root):
-            config = Config(json_path=str(os.path.join(self.root, 'service.config.json')))
+            config = Config(json_path=str(os.path.join(self.root, '../service.config.json')))
             self.wd = config.wd
             self.num_classes = config.num_classes
             self.batch_size = config.batch_size
@@ -183,7 +182,7 @@ class PattenCluster:
             if not get:
                 get = self.make_sources
 
-            load = Config(json_path=str(os.path.join(self.root, 'log', get[-1])))
+            load = Config(json_path=str(os.path.join(self.root, '../log', get[-1])))
             self.log = load
             # self.window = load.window
 
@@ -194,7 +193,7 @@ class PattenCluster:
 
     @property
     def get_sources(self):
-        return os.listdir(os.path.join(self.root, 'log'))
+        return os.listdir(os.path.join(self.root, '../log'))
 
     @property
     def check_expired(self):
@@ -204,7 +203,7 @@ class PattenCluster:
     @property
     def make_sources(self):
         import pandas as pd
-        is_read = pd.read_csv(os.path.join(self.root, 'db/read_data.csv'))
+        is_read = pd.read_csv(os.path.join(self.root, '../db/read_data.csv'))
         total_window = sorted(is_read.create_date.unique())
 
         save_log = {'window': total_window,
@@ -212,7 +211,7 @@ class PattenCluster:
                     'batch':[]}
 
         fname = 'log_' + datetime.date.today().strftime('%d.%m.%y') + '.json'
-        file_path = os.path.join(self.root, 'log', fname)
+        file_path = os.path.join(self.root, '../log', fname)
         with open(file_path, 'w') as f:
             json.dump(save_log, f)
         return self.get_sources
